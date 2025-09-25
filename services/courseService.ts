@@ -32,6 +32,7 @@ export const getFeaturedCourses = async (language: Language): Promise<Course[]> 
         .select(`
             *,
             instructor_profiles (
+                *,
                 user_profiles ( * )
             )
         `)
@@ -41,7 +42,7 @@ export const getFeaturedCourses = async (language: Language): Promise<Course[]> 
         .limit(8);
 
     if (error) {
-        console.error("Error fetching featured courses:", error);
+        console.error("Error fetching featured courses:", JSON.stringify(error, null, 2));
         throw new Error('Failed to fetch featured courses.');
     }
     
@@ -56,7 +57,7 @@ export const searchCourses = async (query: string, language: Language): Promise<
     const { data, error } = await supabase.rpc('search_courses', { search_term: query });
 
     if (error) {
-        console.error("Error searching courses:", error);
+        console.error("Error searching courses:", JSON.stringify(error, null, 2));
         throw new Error('Failed to search for courses.');
     }
 
@@ -73,7 +74,7 @@ export const getCategories = async (language: Language): Promise<Category[]> => 
         .select(`id, ${nameCol}, icon`);
 
     if (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching categories:", JSON.stringify(error, null, 2));
         throw new Error('Failed to fetch categories.');
     }
 
@@ -97,6 +98,7 @@ export const getCatalogCourses = async (
         .select(`
             *,
             instructor_profiles (
+                *,
                 user_profiles ( * )
             )
         `, { count: 'exact' })
@@ -153,7 +155,7 @@ export const getCatalogCourses = async (
     const { data, error, count } = await query;
 
     if (error) {
-        console.error("Error fetching catalog courses:", error);
+        console.error("Error fetching catalog courses:", JSON.stringify(error, null, 2));
         throw new Error('Failed to fetch catalog courses.');
     }
     
@@ -187,7 +189,7 @@ export const getCourseDetails = async (courseId: string, language: Language): Pr
         .single();
     
     if (error || !data) {
-        console.error("Error fetching course details:", error);
+        console.error("Failed to fetch course details for ID:", courseId, "Supabase error:", JSON.stringify(error, null, 2));
         return null;
     }
 
@@ -202,7 +204,6 @@ export const getCourseDetails = async (courseId: string, language: Language): Pr
         price: data.price,
         currency: data.currency,
         rating: data.rating_average,
-        // FIX: Populate reviewsCount from the database `rating_count` field.
         reviewsCount: data.rating_count,
         reviews: (data.reviews as any[]).map(r => ({
             id: r.id,
@@ -238,7 +239,8 @@ export const getCourseDetails = async (courseId: string, language: Language): Pr
             reviews: instructor.rating_count,
             students: instructor.total_students,
             courses: instructor.total_courses
-        }
+        },
+        category_id: data.category_id
     };
 };
 
@@ -250,6 +252,7 @@ export const getRelatedCourses = async (courseId: string, categoryId: string, la
         .select(`
             *,
             instructor_profiles (
+                *,
                 user_profiles ( * )
             )
         `)
@@ -259,7 +262,7 @@ export const getRelatedCourses = async (courseId: string, categoryId: string, la
         .limit(4);
 
     if (error) {
-        console.error("Error fetching related courses:", error);
+        console.error("Failed to fetch related courses for category ID:", categoryId, "Supabase error:", JSON.stringify(error, null, 2));
         return [];
     }
 

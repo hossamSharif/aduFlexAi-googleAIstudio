@@ -72,6 +72,7 @@ export interface CourseDetails extends Course {
     reviews: Review[];
     enrollment_count: number;
     description: string;
+    category_id: string;
 }
 
 export interface CourseOutline {

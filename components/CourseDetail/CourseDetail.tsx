@@ -30,11 +30,8 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ courseId }) => {
                 const courseData = await getCourseDetails(courseId, language);
                 if (courseData) {
                     setCourse(courseData);
-                    // Fetch related courses after getting the main course's category
-                    // Note: category_id is not yet in CourseDetails type, we assume it's there
-                    const catId = (courseData as any).category_id; 
-                    if(catId) {
-                       const related = await getRelatedCourses(courseId, catId, language);
+                    if(courseData.category_id) {
+                       const related = await getRelatedCourses(courseId, courseData.category_id, language);
                        setRelatedCourses(related);
                     }
                 } else {
