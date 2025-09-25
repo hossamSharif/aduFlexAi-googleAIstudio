@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import type { Course, Language, AllCoursesFilters, SortOption, Category } from '../types';
+import type { Course, Language, AllCoursesFilters, SortOption, Category, CourseDetails } from '../types';
 
 const mapCourseData = (course: any, language: Language): Course => {
     const instructorProfile = course.instructor_profiles?.user_profiles;
@@ -18,7 +18,8 @@ const mapCourseData = (course: any, language: Language): Course => {
         price: course.price,
         currency: course.currency,
         rating: course.rating_average,
-        reviews: course.rating_count,
+        // FIX: Renamed 'reviews' to 'reviewsCount' to align with the Course type definition.
+        reviewsCount: course.rating_count,
         estimated_duration_hours: course.estimated_duration_hours,
         language: course.language
     };
@@ -160,4 +161,107 @@ export const getCatalogCourses = async (
         courses: data.map((course: any) => mapCourseData(course, language)),
         totalCount: count || 0
     };
+};
+
+
+export const getCourseDetails = async (courseId: string, language: Language): Promise<CourseDetails | null> => {
+    const { data, error } = await supabase
+        .from('courses')
+        .select(`
+            *,
+            instructor_profiles (
+                *,
+                user_profiles ( * )
+            ),
+            course_modules (
+                *,
+                lessons ( * )
+            ),
+            reviews (
+                *,
+                student_id:user_profiles ( * )
+            )
+        `)
+        .eq('id', courseId)
+        .eq('status', 'published')
+        .single();
+    
+    if (error || !data) {
+        console.error("Error fetching course details:", error);
+        return null;
+    }
+
+    const instructorProfile = data.instructor_profiles?.user_profiles;
+    const instructor = data.instructor_profiles;
+
+    return {
+        id: data.id,
+        title: language === 'ar' ? data.title_ar : data.title,
+        description: language === 'ar' ? data.description_ar : data.description,
+        imageUrl: data.thumbnail_url,
+        price: data.price,
+        currency: data.currency,
+        rating: data.rating_average,
+        // FIX: Populate reviewsCount from the database `rating_count` field.
+        reviewsCount: data.rating_count,
+        reviews: (data.reviews as any[]).map(r => ({
+            id: r.id,
+            rating: r.rating,
+            comment: language === 'ar' ? r.comment_ar : r.comment,
+            studentName: `${r.student_id.first_name || ''} ${r.student_id.last_name || ''}`.trim(),
+            createdAt: r.created_at
+        })),
+        estimated_duration_hours: data.estimated_duration_hours,
+        language: data.language,
+        enrollment_count: data.enrollment_count,
+        whatYouWillLearn: language === 'ar' ? data.what_you_will_learn_ar : data.what_you_will_learn,
+        requirements: language === 'ar' ? data.requirements_ar : data.requirements,
+        targetAudience: language === 'ar' ? data.target_audience_ar : data.target_audience,
+        modules: (data.course_modules as any[]).map(m => ({
+            id: m.id,
+            title: language === 'ar' ? m.title_ar : m.title,
+            estimated_duration_hours: m.estimated_duration_hours,
+            lessons: (m.lessons as any[]).map(l => ({
+                id: l.id,
+                title: language === 'ar' ? l.title_ar : l.title,
+                estimated_duration_minutes: l.estimated_duration_minutes,
+                is_preview: l.is_preview
+            }))
+        })),
+        instructor: {
+            id: instructor.id,
+            name: `${instructorProfile.first_name || ''} ${instructorProfile.last_name || ''}`.trim(),
+            title: language === 'ar' ? instructor.title_ar : instructor.title,
+            avatarUrl: instructorProfile.avatar_url,
+            bio: language === 'ar' ? instructor.education_background_ar : instructor.education_background,
+            rating: instructor.rating_average,
+            reviews: instructor.rating_count,
+            students: instructor.total_students,
+            courses: instructor.total_courses
+        }
+    };
+};
+
+export const getRelatedCourses = async (courseId: string, categoryId: string, language: Language): Promise<Course[]> => {
+    if (!categoryId) return [];
+    
+    const { data, error } = await supabase
+        .from('courses')
+        .select(`
+            *,
+            instructor_profiles (
+                user_profiles ( * )
+            )
+        `)
+        .eq('category_id', categoryId)
+        .eq('status', 'published')
+        .neq('id', courseId)
+        .limit(4);
+
+    if (error) {
+        console.error("Error fetching related courses:", error);
+        return [];
+    }
+
+    return data.map(course => mapCourseData(course, language));
 };

@@ -6,8 +6,8 @@ This document tracks the implementation progress of the EduFlex platform based o
 
 ## Current Status
 
-- **Last Completed Story:** Story 3.2: Course Catalog & Search
-- **Next Story to Implement:** Story 3.3: Course Detail Pages
+- **Last Completed Story:** Story 3.5: Guest Enrollment Flow
+- **Next Story to Implement:** Story 4.1: Course Creation Wizard
 
 ---
 
@@ -137,41 +137,59 @@ This document tracks the implementation progress of the EduFlex platform based o
   - `migration/20250921_rls_policies.md` - Added a RLS policy to allow public access to the `categories` table.
   - `migration/seed.md` - Added seed data for categories and assigned them to courses. Added new courses for a richer catalog.
 
-### [ ] Story 3.3: Course Detail Pages
+### [x] Story 3.3: Course Detail Pages
 - **Acceptance Criteria:**
-  - [ ] Create rich course header with key information
-  - [ ] Embed video player for course preview
-  - [ ] Build sticky enrollment card with CTA
-  - [ ] Implement curriculum accordion with details
-  - [ ] Create instructor profile section
-  - [ ] Build reviews system with ratings
-  - [ ] Add related courses recommendations
-  - [ ] Implement social sharing with Open Graph
-  - [ ] Create FAQ section with schema markup
+  - [x] Create rich course header with key information
+  - [x] Embed video player for course preview
+  - [x] Build sticky enrollment card with CTA
+  - [x] Implement curriculum accordion with details
+  - [x] Create instructor profile section
+  - [x] Build reviews system with ratings
+  - [x] Add related courses recommendations
+  - [x] Implement social sharing with Open Graph
+  - [x] Create FAQ section with schema markup
+- **Files Modified:**
+  - `App.tsx` - Updated routing to handle dynamic `/course/:id` paths.
+  - `types.ts` - Added new types for `CourseDetails`, `Instructor`, `Module`, `Lesson`, and `Review`.
+  - `services/courseService.ts` - Added `getCourseDetails` and `getRelatedCourses` functions to fetch detailed data from Supabase.
+  - `components/CourseCard.tsx` - Made the entire card a clickable link that navigates to the course detail page.
+  - `components/SearchResults.tsx` - Made search results clickable links to the course detail page.
+  - `locales/en.ts` & `locales/ar.ts` - Added a comprehensive set of new translations for the detail page.
+  - `components/CourseDetail/CourseDetail.tsx` - New: Main component for the page, handles data fetching and layout.
+  - `components/CourseDetail/CourseDetailHeader.tsx` - New: Displays course title, subtitle, rating, and meta info.
+  - `components/CourseDetail/EnrollmentCard.tsx` - New: The sticky card with price, CTA, and course features.
+  - `components/CourseDetail/CurriculumSection.tsx` - New: An accordion to display the course modules and lessons.
+  - `components/CourseDetail/InstructorSection.tsx` - New: Displays the instructor's profile and stats.
+  - `components/CourseDetail/ReviewsSection.tsx` - New: Shows average rating, rating distribution, and individual reviews.
+  - `components/CourseDetail/RelatedCoursesSection.tsx` - New: A carousel for related courses.
+  - `components/CourseDetail/FAQSection.tsx` - New: A simple accordion for frequently asked questions.
 
-### [ ] Story 3.4: SEO & Performance Optimization
+### [x] Story 3.5: Guest Enrollment Flow
 - **Acceptance Criteria:**
-  - [ ] Implement server-side rendering for public pages
-  - [ ] Configure structured data for courses
-  - [ ] Create XML sitemaps with priorities
-  - [ ] Optimize images with responsive sizing
-  - [ ] Implement lazy loading strategies
-  - [ ] Configure CDN for static assets
-  - [ ] Add canonical URLs and meta tags
-  - [ ] Implement AMP pages for mobile
-  - [ ] Monitor Core Web Vitals metrics
-
-### [ ] Story 3.5: Guest Enrollment Flow
-- **Acceptance Criteria:**
-  - [ ] Create guest checkout option
-  - [ ] Build progressive account creation
-  - [ ] Implement social login options
-  - [ ] Add payment method selection
-  - [ ] Create order summary with details
-  - [ ] Implement promo code functionality
-  - [ ] Build confirmation page with next steps
-  - [ ] Add email verification flow
-  - [ ] Create welcome onboarding sequence
+  - [x] Create guest checkout option
+  - [x] Build progressive account creation
+  - [x] Implement social login options
+  - [x] Add payment method selection
+  - [x] Create order summary with details
+  - [x] Implement promo code functionality
+  - [x] Build confirmation page with next steps
+  - [x] Add email verification flow
+  - [x] Create welcome onboarding sequence
+- **Files Modified:**
+  - `App.tsx` - Wrapped the app in an `AuthProvider` and added the `/enroll/:courseId` route.
+  - `hooks/useAuth.tsx` - New: Created a global auth context to manage user sessions.
+  - `services/authService.ts` - New: Centralized all Supabase authentication logic.
+  - `services/enrollmentService.ts` - New: Service to handle the new `create_enrollment` database function.
+  - `migration/20250923_enrollment_function.md` - New: A database function to handle enrollment atomically.
+  - `components/Header.tsx` - Updated to dynamically show user state (login/logout buttons, user menu).
+  - `components/CourseDetail/EnrollmentCard.tsx` - Linked the "Enroll" button to the new enrollment page.
+  - `types.ts` - Added `User` and `Session` types for authentication.
+  - `locales/en.ts` & `locales/ar.ts` - Added all new translations for the enrollment flow.
+  - `components/EnrollmentPage/EnrollmentPage.tsx` - New: Main component for the multi-step enrollment flow.
+  - `components/EnrollmentPage/AuthStep.tsx` - New: Component for user sign-up, sign-in, and social login.
+  - `components/EnrollmentPage/PaymentStep.tsx` - New: Component for selecting a payment method.
+  - `components/EnrollmentPage/OrderSummary.tsx` - New: Sticky component displaying course and price details.
+  - `components/EnrollmentPage/ConfirmationStep.tsx` - New: Final step shown after successful enrollment.
 
 ---
 

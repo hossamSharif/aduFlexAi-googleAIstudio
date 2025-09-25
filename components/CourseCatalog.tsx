@@ -120,7 +120,7 @@ const CourseCatalog: React.FC = () => {
         if (courses.length === 0) return <div className="text-center text-gray-500 dark:text-gray-400 py-16">{t('catalog.noCourses')}</div>;
 
         return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
                 {courses.map(course => <CourseCard key={course.id} course={course} />)}
             </div>
         );

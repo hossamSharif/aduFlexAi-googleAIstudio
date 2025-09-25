@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Course } from '../types';
 import { useLocalization } from '../hooks/useLocalization';
+import { useRouter } from '../App';
 
 interface SearchResultsProps {
     results: Course[];
@@ -11,6 +12,12 @@ interface SearchResultsProps {
 
 const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, error, query }) => {
     const { t } = useLocalization();
+    const { navigateTo } = useRouter();
+
+    const handleResultClick = (e: React.MouseEvent<HTMLAnchorElement>, courseId: string) => {
+        e.preventDefault();
+        navigateTo(`/course/${courseId}`);
+    };
 
     const renderContent = () => {
         if (isLoading) {
@@ -35,11 +42,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, error
                 <ul role="listbox">
                     {results.map(course => (
                         <li key={course.id} role="option" aria-selected="false">
-                            <a href="#" className="flex items-center p-4 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200">
+                            <a href={`/course/${course.id}`} onClick={(e) => handleResultClick(e, course.id)} className="flex items-center p-4 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200">
                                 <img src={course.imageUrl} alt={course.title} className="w-16 h-10 object-cover rounded-md me-4"/>
                                 <div className="text-start">
                                     <p className="font-semibold text-gray-800 dark:text-gray-200">{course.title}</p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">{course.instructor}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">{typeof course.instructor === 'string' ? course.instructor : course.instructor.name}</p>
                                 </div>
                             </a>
                         </li>

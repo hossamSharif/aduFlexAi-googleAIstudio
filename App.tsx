@@ -1,9 +1,12 @@
 import React, { useState, createContext, useContext } from 'react';
 import { LocalizationProvider } from './hooks/useLocalization';
+import { AuthProvider } from './hooks/useAuth'; // Import AuthProvider
 import Header from './components/Header';
 import Footer from './components/Footer';
 import CourseCatalog from './components/CourseCatalog';
 import LandingPage from './components/LandingPage';
+import CourseDetail from './components/CourseDetail/CourseDetail';
+import EnrollmentPage from './components/EnrollmentPage/EnrollmentPage';
 
 // Create a context for our simple router
 interface RouterContextType {
@@ -32,6 +35,15 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
+    if (route.startsWith('/enroll/')) {
+        const courseId = route.split('/')[2];
+        return <EnrollmentPage courseId={courseId} />;
+    }
+    if (route.startsWith('/course/')) {
+        const courseId = route.split('/')[2];
+        return <CourseDetail courseId={courseId} />;
+    }
+      
     switch (route) {
       case '/courses':
         return <CourseCatalog />;
@@ -43,15 +55,17 @@ const App: React.FC = () => {
 
   return (
     <LocalizationProvider>
-      <RouterContext.Provider value={{ navigateTo }}>
-        <div className="bg-gray-50 dark:bg-gray-900 font-sans flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-grow">
-            {renderContent()}
-          </main>
-          <Footer />
-        </div>
-      </RouterContext.Provider>
+      <AuthProvider>
+        <RouterContext.Provider value={{ navigateTo }}>
+          <div className="bg-gray-50 dark:bg-gray-900 font-sans flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-grow">
+              {renderContent()}
+            </main>
+            <Footer />
+          </div>
+        </RouterContext.Provider>
+      </AuthProvider>
     </LocalizationProvider>
   );
 };
